@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioGest - Orto e Frutteto</title>
+    <!-- CSS: Tailwind per Responsività Rapida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .active-tab { border-bottom: 4px solid #2e7d32; color: #2e7d32; font-weight: bold; }
+        .card { @apply bg-white p-4 rounded-xl shadow-md mb-4; }
+        input, select { @apply border w-full p-2 rounded mt-1 mb-3; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Schermata di Login -->
+    <div id="auth-container" class="flex flex-col items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-80 text-center">
+            <h1 class="text-2xl font-bold mb-6 text-green-700">BioGest Login</h1>
+            <button onclick="loginGoogle()" class="bg-red-500 text-white px-4 py-2 rounded shadow mb-4 w-full">
+                <i class="fab fa-google mr-2"></i> Accedi con Google
+            </button>
+            <div class="text-gray-400 my-2">oppure</div>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="loginEmail()" class="bg-green-600 text-white px-4 py-2 rounded w-full mb-2">Accedi</button>
+            <button onclick="registerEmail()" class="text-sm text-blue-600">Registrati</button>
+        </div>
+    </div>
+
+    <!-- App Principale (Nascosta inizialmente) -->
+    <div id="app-container" class="hidden">
+        <!-- Header -->
+        <header class="bg-green-700 text-white p-4 flex justify-between items-center sticky top-0 z-50">
+            <h1 class="font-bold">BioGest</h1>
+            <button onclick="logout()" class="text-sm bg-green-800 px-3 py-1 rounded">Esci</button>
+        </header>
+
+        <!-- Menu Navigazione -->
+        <nav class="bg-white shadow flex justify-around p-2 text-sm uppercase tracking-wider">
+            <button onclick="switchTab('orto')" id="tab-orto" class="p-2 active-tab text-xs md:text-base">Orto</button>
+            <button onclick="switchTab('frutteto')" id="tab-frutteto" class="p-2 text-xs md:text-base">Frutteto</button>
+            <button onclick="switchTab('calendario')" id="tab-calendario" class="p-2 text-xs md:text-base text-orange-600 font-bold">Calendario</button>
+            <button onclick="switchTab('contabilita')" id="tab-contabilita" class="p-2 text-xs md:text-base">Contabilità</button>
+        </nav>
+
+        <main class="p-4 max-w-4xl mx-auto">
+            
+            <!-- Sezione Dinamica Orto/Frutteto -->
+            <div id="section-main">
+                <h2 id="current-title" class="text-xl font-bold mb-4 text-green-800 uppercase">Orto</h2>
+                
+                <!-- 1. Lavorazione -->
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 border-b mb-3"><i class="fas fa-shovels mr-2"></i>Lavorazione Suolo</h3>
+                    <select id="lav-select">
+                        <option>Aratura</option>
+                        <option>Arieggiatura</option>
+                        <option>Discatura</option>
+                        <option>Fresatura</option>
+                        <option>Sarchiatura</option>
+                        <option>Trinciatura</option>
+                    </select>
+                    <input type="text" id="lav-manual" placeholder="+ Aggiungi altra lavorazione">
+                    <button onclick="saveData('lavorazione')" class="bg-green-600 text-white w-full p-2 rounded">Registra</button>
+                </div>
+
+                <!-- 2. Colture -->
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 border-b mb-3"><i class="fas fa-seedling mr-2"></i>Colture (Nord IT)</h3>
+                    <select id="col-select">
+                        <option>Aglio</option><option>Bietola</option><option>Cavolo Verza</option>
+                        <option>Fagiolo</option><option>Patata</option><option>Pomodoro</option>
+                        <option>Radicchio</option><option>Zucca</option>
+                    </select>
+                    <input type="text" id="col-manual" placeholder="+ Aggiungi pianta manualmente">
+                    <div class="flex gap-2 text-xs mb-2 text-white">
+                        <button onclick="saveData('coltura', 'Semina')" class="bg-blue-500 flex-1 p-2 rounded text-[10px] md:text-xs">SEMINA</button>
+                        <button onclick="saveData('coltura', 'Trapianto')" class="bg-indigo-500 flex-1 p-2 rounded text-[10px] md:text-xs">TRAPIANTO</button>
+                        <button onclick="saveData('coltura', 'Raccolto')" class="bg-orange-500 flex-1 p-2 rounded text-[10px] md:text-xs">RACCOLTO</button>
+                    </div>
+                </div>
+
+                <!-- 3. Trattamenti -->
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 border-b mb-3"><i class="fas fa-flask mr-2"></i>Trattamenti</h3>
+                    <input type="text" id="tratt-nome" placeholder="Nome Prodotto">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="tratt-dose" placeholder="Dose g/l">
+                        <input type="number" id="tratt-carenza" placeholder="Giorni Carenza">
+                    </div>
+                    <button onclick="saveData('trattamento')" class="bg-red-600 text-white w-full p-2 rounded">Salva Trattamento</button>
+                </div>
+
+                <!-- Funzione Copia/Incolla -->
+                <div class="flex gap-2">
+                    <button onclick="copyToClipboard()" class="bg-gray-700 text-white flex-1 p-3 rounded-xl text-sm">Copia Ultima Attività</button>
+                    <button onclick="pasteFromClipboard()" id="paste-btn" class="hidden bg-gray-500 text-white flex-1 p-3 rounded-xl text-sm">Incolla in <span id="paste-target"></span></button>
+                </div>
+            </div>
+
+            <!-- Sezione Calendario -->
+            <div id="section-calendario" class="hidden">
+                <h2 class="text-xl font-bold mb-4">Registro Storico e Carenze</h2>
+                <div id="calendar-list" class="space-y-2">
+                    <!-- Qui verranno iniettate le attività -->
+                </div>
+            </div>
+
+            <!-- Sezione Contabilità -->
+            <div id="section-contabilita" class="hidden">
+                <h2 class="text-xl font-bold mb-4">Contabilità</h2>
+                <div class="card text-center">
+                    <div class="text-sm text-gray-500 uppercase font-bold">Bilancio</div>
+                    <div id="total-balance" class="text-3xl font-bold text-green-700">€ 0.00</div>
+                </div>
+                <div class="card">
+                    <input type="text" id="cont-desc" placeholder="Voce (es. Concime, Vendita Mele)">
+                    <input type="number" id="cont-importo" placeholder="Importo (usa - per le spese)">
+                    <button onclick="saveContabilita()" class="bg-gray-800 text-white w-full p-2 rounded">Registra Movimento</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- LOGICA JAVASCRIPT -->
+    <script type="module">
+        // Qui andrebbe la configurazione Firebase
+        // Per testarlo subito, simuliamo il funzionamento offline
+        
+        let currentTab = 'orto';
+        let clipboard = null;
+
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab'));
+            document.getElementById('tab-'+tab).classList.add('active-tab');
+            
+            document.getElementById('section-main').classList.add('hidden');
+            document.getElementById('section-calendario').classList.add('hidden');
+            document.getElementById('section-contabilita').classList.add('hidden');
+
+            if(tab === 'orto' || tab === 'frutteto') {
+                document.getElementById('section-main').classList.remove('hidden');
+                document.getElementById('current-title').innerText = tab;
+                document.getElementById('paste-target').innerText = tab === 'orto' ? 'Frutteto' : 'Orto';
+            } else {
+                document.getElementById('section-'+tab).classList.remove('hidden');
+            }
+        };
+
+        window.saveData = (tipo, sottotipo = '') => {
+            const data = {
+                area: currentTab,
+                tipo: tipo,
+                timestamp: new Date().toLocaleString(),
+                valore: document.getElementById(tipo.substring(0,3)+'-select')?.value || 
+                        document.getElementById(tipo.substring(0,3)+'-nome')?.value
+            };
+            alert(`Registrato in ${currentTab}: ${data.valore} ${sottotipo}`);
+            // Qui andrebbe la funzione: db.collection('attività').add(data);
+        };
+
+        window.copyToClipboard = () => {
+            clipboard = { source: currentTab, time: new Date() };
+            document.getElementById('paste-btn').classList.remove('hidden');
+            alert("Attività copiata! Cambia sezione per incollarla.");
+        };
+
+        // Funzione per simulare il login
+        window.loginGoogle = () => {
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
